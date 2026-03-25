@@ -1,6 +1,7 @@
 const userModel = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const tokenBlacklistModel = require("../models/blacklist.model");
 
 async function registerUserController(req, res) {
   const { username, email, password } = req.body;
@@ -63,8 +64,6 @@ async function loginUserController(req, res) {
 
   const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
-  
-
   if (!isPasswordCorrect) {
     return res.status(400).json({
       message: "Invalid email or password",
@@ -86,9 +85,36 @@ async function loginUserController(req, res) {
     user: {
       id: user._id,
       email,
-      username:user.username,
+      username: user.username,
     },
   });
 }
 
-module.exports = { registerUserController,loginUserController };
+async function logoutUserController(req, res) {
+  const token = req.cookies.token;
+  if (token) {
+    await tokenBlacklistModel.create({ token });
+  }
+
+  res.clearCookie("token");
+
+  res.status(200).json({
+    message: "User logged out successfully",
+  });
+}
+
+async function getMeController(req, res) {
+  const user = userModel.findById(req.user.id);
+
+  res.status(200).json({
+    message: "user data fetched successfully",
+   
+  });
+}
+
+module.exports = {
+  registerUserController,
+  loginUserController,
+  logoutUserController,
+  getMeController,
+};
