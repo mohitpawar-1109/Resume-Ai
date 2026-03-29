@@ -59,6 +59,7 @@ async function loginUserController(req, res) {
   if (!user) {
     return res.status(400).json({
       message: "Invalid email or password",
+     
     });
   }
 
@@ -104,11 +105,11 @@ async function logoutUserController(req, res) {
 }
 
 async function getMeController(req, res) {
-  const user = userModel.findById(req.user.id);
+  const user = await userModel.findById(req.user.id);
 
   res.status(200).json({
     message: "user data fetched successfully",
-   
+   user,
   });
 }
 
